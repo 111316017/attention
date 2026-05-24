@@ -200,12 +200,18 @@
 
     <div class="section-box">
         <h2>三、查證與修正</h2>
-        <p><strong>查證主題：</strong>AI 提到「除以 \(\sqrt{d_k}\) 是為了避免 Softmax 梯度消失」，這是正確的嗎？</p>
-        <p><strong>查證過程：</strong>查閱原始論文《Attention Is All You Need》的 3.2.1 節，作者確實指出點積過大會將 softmax 推向梯度極小的區域，因此需要縮放。</p>
+        <p><strong>查證主題：</strong>AI 提到「除以 \(\sqrt{d_k}\) 是為了避免 Softmax 梯度消失」</p>
+        <p><strong>查證過程：</strong>查詢資料確實有提出點積過大會將softmax 推向梯度極小的區域，因此需要縮放。</p>
         <p><strong>修正與比較：</strong></p>
         <ul>
             <li><strong>原本理解：</strong>以為只是隨機常數用來縮小數值。</li>
-            <li><strong>修正後：</strong>確認 AI 解釋符合原論文，補足了對演算法底層防範「梯度消失」的嚴謹認知。</li>
+            <li><strong>修正後：</strong>確認 AI 解釋為真，補足了對演算法底層防範「梯度消失」的嚴謹認知。</li>
+            <li style="list-style: none; margin-top: 15px;">
+                <strong>資料來源：</strong>
+                <a href="https://zhuanlan.zhihu.com/p/4555299718" target="_blank" style="color: #0984e3; text-decoration: none; font-weight: 500;">
+                    🔗 知乎專欄：Attention 注意力機制詳解 (點此閱讀)
+                </a>
+            </li>
         </ul>
     </div>
 
