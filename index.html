@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>期末報告：Attention (注意力機制) 演算法解析</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* 全局設定與背景 */
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            line-height: 1.7;
+            color: #2d3436;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: #f4f7f6;
+            background-image: radial-gradient(#e1e5e8 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* 頂部標題區塊 */
+        header {
+            text-align: center;
+            padding: 20px 0 40px 0;
+            margin-bottom: 20px;
+        }
+        h1 { 
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #0984e3, #6c5ce7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .student-info {
+            display: inline-block;
+            background: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            font-size: 0.95rem;
+            color: #636e72;
+            border: 1px solid #dfe6e9;
+        }
+        .student-info strong {
+            color: #2d3436;
+        }
+
+        /* 標題樣式 */
+        h2 {
+            color: #0984e3;
+            font-size: 1.4rem;
+            border-left: 5px solid #0984e3;
+            padding-left: 15px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        /* 卡片式內容區塊 */
+        .section-box {
+            background: #ffffff;
+            padding: 35px 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+        .section-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+        }
+
+        p, li {
+            font-size: 1.05rem;
+            color: #4a4a4a;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* 表格美化 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 0 1px #dfe6e9;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #dfe6e9;
+        }
+        th { 
+            background-color: #f8f9fa; 
+            color: #2d3436;
+            font-weight: 500;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover td {
+            background-color: #fcfcfc;
+        }
+
+        /* 視覺化互動區塊 CSS */
+        .interactive-box {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(145deg, #1e272e, #2f3640);
+            color: white;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .word {
+            display: inline-block;
+            margin: 8px 6px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: rgba(255,255,255,0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .word:hover { 
+            border-color: #f1c40f; 
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.2);
+        }
+        #instruction {
+            font-size: 0.95rem;
+            color: #a4b0be;
+            margin-bottom: 25px;
+            display: inline-block;
+            background: rgba(0,0,0,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* 響應式設計調整 */
+        @media (max-width: 768px) {
+            .section-box {
+                padding: 25px 20px;
+            }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>期末報告：Attention (注意力機制) 演算法解析</h1>
+        <div class="student-info">
+            <strong>學號：</strong> 111316017 ｜ <strong>姓名：</strong> 游騰緒
+        </div>
+    </header>
+
+    <div class="section-box">
+        <h2>一、演算法介紹</h2>
+        <p><strong>1. 這個演算法是什麼？</strong><br>
+        Attention（注意力機制）是一種模擬人類視覺與認知系統的機器學習演算法。它允許神經網路在處理大量資料時，動態計算出各個輸入元素之間的關聯權重，藉此專注於當下最重要的資訊。</p>
+        <p><strong>2. 主要解決的問題？</strong><br>
+        解決過去 RNN 在處理長篇文本時會遇到的「長距離依賴問題」與「資訊遺忘」。它讓模型在生成輸出時，能直接建立全局的依賴關係。</p>
+        <p><strong>3. 基本流程運作（縮放點積注意力）</strong></p>
+        <ul>
+            <li>將輸入資料轉換為 \(Q\) (Query)、\(K\) (Key)、\(V\) (Value) 矩陣。</li>
+            <li>計算 \(Q\) 和所有 \(K\) 的點積，得出相似度分數。</li>
+            <li>將分數除以 \(\sqrt{d_k}\) 進行縮放，避免梯度消失。</li>
+            <li>通過 Softmax 函數轉化為總和為 1 的權重。</li>
+            <li>將權重與 \(V\) 矩陣相乘，得到最終上下文表示。</li>
+        </ul>
+        <p>核心公式：$$Attention(Q, K, V) = softmax(\frac{QK^T}{\sqrt{d_k}})V$$</p>
+        <p><strong>4. 常見應用：</strong>機器翻譯、大型語言模型（LLM）、電腦視覺。</p>
+    </div>
+
+    <div class="section-box">
+        <h2>二、AI輔助學習紀錄</h2>
+        <table>
+            <tr>
+                <th>詢問 AI 的問題</th>
+                <th>AI 回答重點摘要</th>
+                <th>對我學習的幫助</th>
+            </tr>
+            <tr>
+                <td>Q, K, V 到底是什麼意思？</td>
+                <td>用「圖書館查資料」比喻：Q=搜尋關鍵字，K=書本標題，V=書本內容。</td>
+                <td>將抽象矩陣轉化為具體情境，瞬間理解變數角色。</td>
+            </tr>
+            <tr>
+                <td>公式中為何除以 \(\sqrt{d_k}\)？</td>
+                <td>維度大時點積結果變大，導致 Softmax 進入平緩區造成「梯度消失」。</td>
+                <td>連結到微積分與神經網路訓練概念，理解數學設計背後的工程考量。</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section-box">
+        <h2>三、查證與修正</h2>
+        <p><strong>查證主題：</strong>AI 提到「除以 \(\sqrt{d_k}\) 是為了避免 Softmax 梯度消失」，這是正確的嗎？</p>
+        <p><strong>查證過程：</strong>查閱原始論文《Attention Is All You Need》的 3.2.1 節，作者確實指出點積過大會將 softmax 推向梯度極小的區域，因此需要縮放。</p>
+        <p><strong>修正與比較：</strong></p>
+        <ul>
+            <li><strong>原本理解：</strong>以為只是隨機常數用來縮小數值。</li>
+            <li><strong>修正後：</strong>確認 AI 解釋符合原論文，補足了對演算法底層防範「梯度消失」的嚴謹認知。</li>
+        </ul>
+    </div>
+
+    <div class="section-box">
+        <h2>四、視覺化說明 (互動展示)</h2>
+        <p>以下展示 Self-Attention 的概念。當模型在處理一個詞（Query）時，會將「注意力（權重）」分配給句子中的其他詞（Key）。</p>
+        
+        <div class="interactive-box">
+            <span id="instruction">👉 請將滑鼠移到句子中的單字上，觀察 Attention 權重的變化</span>
+            <div id="sentence-container">
+                </div>
+        </div>
+    </div>
+
+    <div class="section-box">
+        <h2>五、應用案例</h2>
+        <p><strong>實際應用情境：生成式 AI 與大型語言模型（LLM）</strong></p>
+        <p>以 ChatGPT 為例，Attention 演算法是其 Transformer 架構的心臟。當輸入：「蘋果是一種非常健康的水果，它...」時，透過 Attention 機制，模型在考慮「它」這個字時，會賦予前面的「蘋果」極高的注意力權重（如上方互動展示），從而精準生成後續邏輯文字。</p>
+    </div>
+
+    <div class="section-box">
+        <h2>六、學習反思</h2>
+        <ul>
+            <li><strong>AI 對學習的幫助：</strong>能快速提供回答，將龐大架構拆解成易消化的步驟，縮短過濾資料的時間。</li>
+            <li><strong>AI 回答的限制：</strong>有時為簡化說明會跳過數學證明，需主動追問或查詢資料。</li>
+            <li><strong>自己最後真正學會了什麼：</strong>掌握了 \(Q\)、\(K\)、\(V\) 矩陣的運算邏輯與其物理意義。</li>
+        </ul>
+    </div>
+
+    <script>
+        const sentence = ["蘋果", "是", "非常", "健康的", "水果", "，", "它", "含有", "維他命"];
+        // 模擬注意力權重矩陣 (這裡以簡化資料示範)
+        // 當游標停在目標詞上時，對應其他詞的權重 (0~1)
+        const attentionWeights = {
+            "它": [0.9, 0.1, 0.1, 0.3, 0.8, 0.0, 1.0, 0.1, 0.2],
+            "蘋果": [1.0, 0.2, 0.1, 0.6, 0.8, 0.0, 0.9, 0.1, 0.1],
+            "水果": [0.8, 0.2, 0.1, 0.7, 1.0, 0.0, 0.8, 0.1, 0.1]
+        };
+
+        const container = document.getElementById('sentence-container');
+
+        // 生成單字元素
+        sentence.forEach((word, index) => {
+            const span = document.createElement('span');
+            span.textContent = word;
+            span.className = 'word';
+            span.dataset.index = index;
+            
+            // 滑鼠移入事件
+            span.addEventListener('mouseenter', () => {
+                const weights = attentionWeights[word];
+                if(weights) {
+                    const allWords = document.querySelectorAll('.word');
+                    allWords.forEach((w, i) => {
+                        // 根據權重改變背景顏色 (紅色深淺)
+                        const opacity = weights[i];
+                        w.style.backgroundColor = `rgba(231, 76, 60, ${opacity})`;
+                        w.style.color = opacity > 0.3 ? '#ffffff' : 'inherit';
+                        w.style.borderColor = `rgba(231, 76, 60, ${opacity})`;
+                    });
+                }
+            });
+
+            // 滑鼠移出事件
+            span.addEventListener('mouseleave', () => {
+                const allWords = document.querySelectorAll('.word');
+                allWords.forEach(w => {
+                    w.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    w.style.color = 'white';
+                    w.style.borderColor = 'rgba(255,255,255,0.1)';
+                });
+            });
+
+            container.appendChild(span);
+        });
+    </script>
+</body>
+</html>
